@@ -20,7 +20,8 @@ type AutoCompleteProps = {
   isLoading?: boolean
   disabled?: boolean
   placeholder?: string
-}
+  itemTemplate?: (item: Option) => React.ReactNode
+};
 
 export const AutoComplete = ({
   options,
@@ -30,6 +31,7 @@ export const AutoComplete = ({
   onValueChange,
   disabled,
   isLoading = false,
+  itemTemplate,
 }: AutoCompleteProps) => {
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -131,12 +133,12 @@ export const AutoComplete = ({
                       }}
                       onSelect={() => handleSelectOption(option)}
                       className={cn(
-                        "flex w-full items-center gap-2",
+                        "flex w-full items-center gap-2 cursor-pointer",
                         !isSelected ? "pl-8" : null,
                       )}
                     >
                       {isSelected ? <Check className="w-4" /> : null}
-                      {option.label}
+                      {itemTemplate ? itemTemplate(option) : option.label}
                     </CommandItem>
                   )
                 })}

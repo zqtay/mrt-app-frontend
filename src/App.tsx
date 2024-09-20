@@ -4,6 +4,7 @@ import './App.css';
 import StationService from "./services/station";
 import { StationArrival, StationData, StationInfo } from "./types/station";
 import { AutoComplete } from "./components/ui/autocomplete";
+import { StationBadge } from "./components/mrt/station-badge";
 
 const App: FC = () => {
   const [stations, setStations] = useState<StationData[]>([]);
@@ -24,6 +25,15 @@ const App: FC = () => {
       options={stations.map(station => ({ label: `${station.code} ${station.name}`, value: station.name }))}
       emptyMessage={"Type station name or code"}
       onValueChange={handleSelect}
+      itemTemplate={(item) => {
+        let [codes, ...name] = item.label.split(" ");
+        return <div className="flex items-center">
+          {
+            codes.split(",").map((code, i) => <StationBadge key={i} code={code} className="mr-1" />)
+          }
+          <span className="ml-1">{name.join(" ")}</span>
+        </div>;
+      }}
     />
     <div>
       <h1>{info?.code} {info?.name}</h1>
@@ -39,7 +49,7 @@ const ArrivalCard = ({ arrival }: { arrival: StationArrival; }) => {
     <div>Towards {arrival.next_train_destination}</div>
     <div>{arrival.platform_ID}</div>
     <div>{arrival.next_train_arr} mins</div>
-  {arrival.code}
+    {arrival.code}
   </div>);
 };
 
