@@ -1,35 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { FC, useEffect, useState } from 'react';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+import StationService from "./services/station";
+import { StationArrival, StationData, StationInfo } from "./types/station";
+import { AutoComplete } from "./components/ui/autocomplete";
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App: FC = () => {
+  const [stations, setStations] = useState<StationData[]>([]);
+  const [info, setInfo] = useState<StationInfo>();
+  const [arrivals, setArrivals] = useState<StationArrival[]>();
 
-export default App
+  useEffect(() => {
+    StationService.getAllStations().then(data => setStations(data.results));
+  }, []);
+
+  const handleSelect = (e: any) => {
+    StationService.getStationInfo(e.value).then(data => setInfo(data.results[0]));
+    StationService.getStationArrivals(e.value).then(data => setArrivals(data.results));
+  };
+
+  return (<div className="container mx-auto">
+    <AutoComplete
+      options={stations.map(station => ({ label: `${station.code} ${station.name}`, value: station.name }))}
+      emptyMessage={"Type station name or code"}
+      onValueChange={handleSelect}
+    />
+    <div>
+      <h1>{info?.code} {info?.name}</h1>
+      {
+        arrivals?.map((e, i) => <ArrivalCard key={i} arrival={e} />)
+      }
+    </div>
+  </div>);
+};
+
+const ArrivalCard = ({ arrival }: { arrival: StationArrival; }) => {
+  return (<div className="card">
+    <div>Towards {arrival.next_train_destination}</div>
+    <div>{arrival.platform_ID}</div>
+    <div>{arrival.next_train_arr} mins</div>
+  {arrival.code}
+  </div>);
+};
+
+export default App;
